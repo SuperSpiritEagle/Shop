@@ -34,7 +34,6 @@ namespace Shop
                                   $"команда [{ComandSeeYourStuff}] посмотреть свой покупки\n" +
                                   $"команда [{ComandExit}] для выхода из программы");
 
-
                 userInput = Console.ReadLine();
                 Console.Clear();
 
