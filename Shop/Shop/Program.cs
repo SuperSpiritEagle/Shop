@@ -12,19 +12,20 @@ namespace Shop
             const string ComandSeeYourStuff = "3";
             const string ComandExit = "exit";
 
+            Seller seller = new Seller();
+
+            Player player = new Player();
+
             List<Product> products = new List<Product>();
             List<Product> SoldGoods = new List<Product>();
-
-            products.Add(new Product("фото"));
-            products.Add(new Product("ноут"));
-            products.Add(new Product("тел"));
 
             bool isWork = true;
 
             string userInput;
 
-            Seller seller = new Seller();
-            Player player = new Player();
+            products.Add(new Product("фото"));
+            products.Add(new Product("ноут"));
+            products.Add(new Product("тел"));
 
             while (isWork)
             {
