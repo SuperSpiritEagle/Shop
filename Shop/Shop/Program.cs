@@ -7,70 +7,63 @@ namespace Shop
     {
         static void Main(string[] args)
         {
-            const string ComandShowProduct = "1";
-            const string ComandSellProduct = "2";
-            const string ComandSeeYourStuff = "3";
-            const string ComandExit = "exit";
+            Shop shop = new Shop();
 
-            Seller seller = new Seller();
+            shop.WorkProgram();
+        }
 
-            Player player = new Player();
-
-            List<Product> products = new List<Product>();
-            List<Product> SoldGoods = new List<Product>();
-
-            bool isWork = true;
-
-            string userInput;
-
-            products.Add(new Product("фото"));
-            products.Add(new Product("ноут"));
-            products.Add(new Product("тел"));
-
-            while (isWork)
+        class Shop
+        {
+            public void WorkProgram()
             {
-                Console.WriteLine($"команда [{ComandShowProduct}] показать товар\n" +
-                                  $"команда [{ComandSellProduct}] продать товар\n" +
-                                  $"команда [{ComandSeeYourStuff}] посмотреть свой покупки\n" +
-                                  $"команда [{ComandExit}] для выхода из программы");
+                const string ComandShowProduct = "1";
+                const string ComandSellProduct = "2";
+                const string ComandSeeYourStuff = "3";
+                const string ComandExit = "exit";
 
-                userInput = Console.ReadLine();
-                Console.Clear();
+                Seller seller = new Seller();
 
-                switch (userInput)
+                Player player = new Player();
+
+                List<Product> products = new List<Product>();
+                List<Product> soldGoods = new List<Product>();
+
+                bool isWork = true;
+
+                string userInput;
+
+                products.Add(new Product("фото"));
+                products.Add(new Product("ноут"));
+                products.Add(new Product("тел"));
+
+                while (isWork)
                 {
-                    case ComandShowProduct:
-                        seller.ShowProducts(products);
-                        break;
+                    Console.WriteLine($"команда [{ComandShowProduct}] показать товар\n" +
+                                      $"команда [{ComandSellProduct}] продать товар\n" +
+                                      $"команда [{ComandSeeYourStuff}] посмотреть свой покупки\n" +
+                                      $"команда [{ComandExit}] для выхода из программы");
 
-                    case ComandSellProduct:
-                        int sell;
+                    userInput = Console.ReadLine();
+                    Console.Clear();
 
-                        Console.WriteLine("Выберите товар который хотите купить");
-                        seller.ShowProducts(products);
-
-                        int.TryParse(Console.ReadLine(), out sell);
-
-                        if (sell < 0 || sell > products.Count)
-                        {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("Товар не найден!!!");
-                            Console.ForegroundColor = ConsoleColor.White;
+                    switch (userInput)
+                    {
+                        case ComandShowProduct:
+                            seller.ShowProducts(products);
                             break;
-                        }
 
-                        SoldGoods.Add(products[sell - 1]);
+                        case ComandSellProduct:
+                            seller.SellProduct(products, soldGoods, seller);
+                            break;
 
-                        products.RemoveAt(sell - 1);
-                        break;
+                        case ComandSeeYourStuff:
+                            player.ShowPurchase(soldGoods);
+                            break;
 
-                    case ComandSeeYourStuff:
-                        player.ShowPurchase(SoldGoods);
-                        break;
-
-                    case ComandExit:
-                        isWork = false;
-                        break;
+                        case ComandExit:
+                            isWork = false;
+                            break;
+                    }
                 }
             }
         }
@@ -108,20 +101,42 @@ namespace Shop
                     Console.ForegroundColor = ConsoleColor.White;
                 }
             }
+
+            public void SellProduct(List<Product> products, List<Product> soldGoods, Seller seller)
+            {
+                Console.WriteLine("Выберите товар который хотите купить");
+                seller.ShowProducts(products);
+
+                int.TryParse(Console.ReadLine(), out int sell);
+
+                if (sell <= 0 || sell > products.Count)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Товар не найден!!!");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                else
+                {
+                    soldGoods.Add(products[sell - 1]);
+
+                    products.RemoveAt(sell - 1);
+                }
+            }
         }
     }
 
     class Product
     {
-        private string _Product;
+        private string _product;
+
         public Product(string product)
         {
-            _Product = product;
+            _product = product;
         }
 
         public void ShowInfo()
         {
-            Console.WriteLine(_Product);
+            Console.WriteLine(_product);
         }
     }
 }
