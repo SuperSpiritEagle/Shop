@@ -19,6 +19,24 @@ namespace Shop
 
     class Shop
     {
+        public void TransferProduct(Seller seller, Player player, List<Product> products)
+        {
+            seller.ShowProducts(products, ConsoleColor.Yellow);
+
+            if (seller.TryGetProduct(out Product product, products) == false)
+            {
+                return;
+            }
+
+            if (player.CanPay(product.Price) == false)
+            {
+                return;
+            }
+
+            seller.Sell(product);
+            player.Buy(product);
+        }
+
         public void WorkProgram(Seller seller, Player player, List<Product> products)
         {
             const string ComandShowProduct = "1";
@@ -30,7 +48,7 @@ namespace Shop
 
             string userInput;
 
-            seller.Products(products);
+            seller.AddProducts(products);
 
             while (isWork)
             {
@@ -49,8 +67,7 @@ namespace Shop
                         break;
 
                     case ComandSellProduct:
-
-                        seller.SellProduct(products, seller, player);
+                        TransferProduct(seller, player, products);
                         break;
 
                     case ComandSeeYourStuff:
@@ -67,7 +84,10 @@ namespace Shop
 
     class Persone
     {
-        public void Products(List<Product> products)
+        protected int money = 1000;
+        protected int cash = 0;
+
+        public void AddProducts(List<Product> products)
         {
             products.Add(new Product("фото", 900));
             products.Add(new Product("ноут", 200));
@@ -95,75 +115,69 @@ namespace Shop
 
     class Player : Persone
     {
-        private List<Product> soldGoods = new List<Product>();
-        private int _money = 1000;
+        private List<Product> _soldGoods = new List<Product>();
 
-        public int GetMoney() => _money;
-
-        public int PayGoods(int price) => _money -= price;
-
-        public void BuyProduct(List<Product> products, int index)
+        public bool CanPay(int price)
         {
-            soldGoods.Add(products[index - 1]);
+            if (money >= price)
+            {
+                Console.WriteLine("Оплата прошла успешно");
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("No money no honey");
+                return false;
+            }
+        }
+
+        public void Buy(Product product)
+        {
+            money -= product.Price;
+            _soldGoods.Add(product);
         }
 
         public void ShowPurchase()
         {
-            if (soldGoods.Count == 0)
+            if (_soldGoods.Count == 0)
             {
                 ConsoleColorText("Покупок нет", ConsoleColor.Red);
             }
             else
             {
                 Console.WriteLine("Мои покупки");
-                ShowProducts(soldGoods, ConsoleColor.Green);
+                ShowProducts(_soldGoods, ConsoleColor.Green);
+                Console.WriteLine($"Баланс покупателя = {money}");
             }
         }
     }
 
     class Seller : Persone
     {
-        private int _cash = 0;
-
-        public void SellProduct(List<Product> products, Seller seller, Player player)
+        public bool TryGetProduct(out Product product, List<Product> products)
         {
             Console.WriteLine("Выберите товар который хотите купить");
-            seller.ShowProducts(products, ConsoleColor.Cyan);
 
             int.TryParse(Console.ReadLine(), out int index);
 
             if (index <= 0 || index > products.Count)
             {
-                ConsoleColorText("Товар не найден!!!", ConsoleColor.Red);
+                Console.WriteLine("Товар не наиден");
+                product = null;
+                return false;
             }
             else
             {
-                Console.WriteLine("Внесите деньги");
-                int.TryParse(Console.ReadLine(), out int price);
-
-                if (products[index - 1].Price == price)
-                {
-                    int balance = player.GetMoney();
-
-                    if (balance >= price)
-                    {
-                        balance = player.PayGoods(price);
-                        _cash += price;
-                        player.BuyProduct(products, index);
-                        Console.WriteLine($"Баланс покупателя = {balance} Баланс продавца = {_cash}");
-                        Console.WriteLine("Товар продан!!!");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Баланс покупателя = {balance}");
-                        Console.WriteLine("не достаточно денег");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Товар не найден!");
-                }
+                product = products[index - 1];
+                product.ShowInfo();
+                return true;
             }
+        }
+
+        public void Sell(Product product)
+        {
+            cash += product.Price;
+            Console.WriteLine($"Баланс продовца = {cash}");
         }
     }
 
