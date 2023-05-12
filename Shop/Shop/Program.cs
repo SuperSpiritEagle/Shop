@@ -11,7 +11,7 @@ namespace Shop
             Seller seller = new Seller();
             Player player = new Player();
 
-            List<Product> products = new List<Product>(); ;
+            List<Product> products = new List<Product>();
 
             shop.WorkProgram(seller, player, products);
         }
@@ -19,7 +19,7 @@ namespace Shop
 
     class Shop
     {
-        public void TransferProduct(Seller seller, Player player, List<Product> products)
+        private void TransferProduct(Seller seller, Player player, List<Product> products)
         {
             seller.ShowProducts(products, ConsoleColor.Yellow);
 
@@ -63,7 +63,7 @@ namespace Shop
                 switch (userInput)
                 {
                     case ComandShowProduct:
-                        seller.ShowProducts(products, ConsoleColor.Green);
+                        seller.ShowProducts(products, ConsoleColor.Cyan);
                         break;
 
                     case ComandSellProduct:
@@ -84,17 +84,10 @@ namespace Shop
 
     class Persone
     {
-        protected int money = 1000;
-        protected int cash = 0;
+        protected int Money = 1000;
+        protected int Cash = 0;
 
-        public void AddProducts(List<Product> products)
-        {
-            products.Add(new Product("фото", 900));
-            products.Add(new Product("ноут", 200));
-            products.Add(new Product("тел", 50));
-        }
-
-        public void ShowProducts(List<Product> products, ConsoleColor colorText)
+        public virtual void ShowProducts(List<Product> products, ConsoleColor colorText)
         {
             for (int i = 0; i < products.Count; i++)
             {
@@ -119,21 +112,21 @@ namespace Shop
 
         public bool CanPay(int price)
         {
-            if (money >= price)
+            if (Money >= price)
             {
-                Console.WriteLine("Оплата прошла успешно");
+                ConsoleColorText("Оплата прошла успешно!", ConsoleColor.Green);
                 return true;
             }
             else
             {
-                Console.WriteLine("No money no honey");
+                ConsoleColorText("No money no honey", ConsoleColor.Red);
                 return false;
             }
         }
 
         public void Buy(Product product)
         {
-            money -= product.Price;
+            Money -= product.Price;
             _soldGoods.Add(product);
         }
 
@@ -145,15 +138,22 @@ namespace Shop
             }
             else
             {
-                Console.WriteLine("Мои покупки");
-                ShowProducts(_soldGoods, ConsoleColor.Green);
-                Console.WriteLine($"Баланс покупателя = {money}");
+                ConsoleColorText("Мои покупки", ConsoleColor.Yellow);
+                base.ShowProducts(_soldGoods, ConsoleColor.Green);
+                ConsoleColorText($"Баланс = {Money}", ConsoleColor.Blue);
             }
         }
     }
 
     class Seller : Persone
     {
+        public void AddProducts(List<Product> products)
+        {
+            products.Add(new Product("фото", 900));
+            products.Add(new Product("ноут", 200));
+            products.Add(new Product("тел", 50));
+        }
+
         public bool TryGetProduct(out Product product, List<Product> products)
         {
             Console.WriteLine("Выберите товар который хотите купить");
@@ -162,7 +162,7 @@ namespace Shop
 
             if (index <= 0 || index > products.Count)
             {
-                Console.WriteLine("Товар не наиден");
+                ConsoleColorText("Товар не найден", ConsoleColor.Red);
                 product = null;
                 return false;
             }
@@ -176,8 +176,8 @@ namespace Shop
 
         public void Sell(Product product)
         {
-            cash += product.Price;
-            Console.WriteLine($"Баланс продовца = {cash}");
+            Cash += product.Price;
+            ConsoleColorText($"Баланс продавца = {Cash}", ConsoleColor.Green);
         }
     }
 
