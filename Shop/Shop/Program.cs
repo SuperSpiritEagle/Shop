@@ -11,19 +11,59 @@ namespace Shop
             Seller seller = new Seller();
             Player player = new Player();
 
-            List<Product> products = new List<Product>();
-
-            shop.WorkProgram(seller, player, products);
+            shop.WorkProgram(seller, player);
         }
     }
 
     class Shop
     {
-        private void TransferProduct(Seller seller, Player player, List<Product> products)
+        public void WorkProgram(Seller seller, Player player)
         {
-            seller.ShowProducts(products, ConsoleColor.Yellow);
+            const string CommandShowProduct = "1";
+            const string CommandSellProduct = "2";
+            const string CommandSeeYourStuff = "3";
+            const string CommandExit = "exit";
 
-            if (seller.TryGetProduct(out Product product, products) == false)
+            bool isWork = true;
+
+            string userInput;
+
+            while (isWork)
+            {
+                Console.WriteLine($"команда [{CommandShowProduct}] показать товар\n" +
+                                  $"команда [{CommandSellProduct}] продать товар\n" +
+                                  $"команда [{CommandSeeYourStuff}] посмотреть свой покупки\n" +
+                                  $"команда [{CommandExit}] для выхода из программы");
+
+                userInput = Console.ReadLine();
+                Console.Clear();
+
+                switch (userInput)
+                {
+                    case CommandShowProduct:
+                        seller.ShowProducts(ConsoleColor.Cyan);
+                        break;
+
+                    case CommandSellProduct:
+                        TransferProduct(seller, player);
+                        break;
+
+                    case CommandSeeYourStuff:
+                        player.ShowProducts(ConsoleColor.Green);
+                        break;
+
+                    case CommandExit:
+                        isWork = false;
+                        break;
+                }
+            }
+        }
+
+        private void TransferProduct(Seller seller, Player player)
+        {
+            seller.ShowProducts(ConsoleColor.Yellow);
+
+            if (seller.TryGetProduct(out Product product) == false)
             {
                 return;
             }
@@ -36,64 +76,26 @@ namespace Shop
             seller.Sell(product);
             player.Buy(product);
         }
-
-        public void WorkProgram(Seller seller, Player player, List<Product> products)
-        {
-            const string ComandShowProduct = "1";
-            const string ComandSellProduct = "2";
-            const string ComandSeeYourStuff = "3";
-            const string ComandExit = "exit";
-
-            bool isWork = true;
-
-            string userInput;
-
-            seller.AddProducts(products);
-
-            while (isWork)
-            {
-                Console.WriteLine($"команда [{ComandShowProduct}] показать товар\n" +
-                                  $"команда [{ComandSellProduct}] продать товар\n" +
-                                  $"команда [{ComandSeeYourStuff}] посмотреть свой покупки\n" +
-                                  $"команда [{ComandExit}] для выхода из программы");
-
-                userInput = Console.ReadLine();
-                Console.Clear();
-
-                switch (userInput)
-                {
-                    case ComandShowProduct:
-                        seller.ShowProducts(products, ConsoleColor.Cyan);
-                        break;
-
-                    case ComandSellProduct:
-                        TransferProduct(seller, player, products);
-                        break;
-
-                    case ComandSeeYourStuff:
-                        player.ShowPurchase();
-                        break;
-
-                    case ComandExit:
-                        isWork = false;
-                        break;
-                }
-            }
-        }
     }
 
     class Persone
     {
         protected int Money = 1000;
-        protected int Cash = 0;
+        protected List<Product> Products = new List<Product>();
 
-        public virtual void ShowProducts(List<Product> products, ConsoleColor colorText)
+        public void ShowProducts(ConsoleColor colorText)
         {
-            for (int i = 0; i < products.Count; i++)
+            if (Products.Count == 0)
+            {
+                ConsoleColorText("Покупок нет", ConsoleColor.Red);
+                return;
+            }
+
+            for (int i = 0; i < Products.Count; i++)
             {
                 Console.ForegroundColor = colorText;
                 Console.Write(i + 1 + " ");
-                products[i].ShowInfo();
+                Products[i].ShowInfo();
                 Console.ForegroundColor = ConsoleColor.White;
             }
         }
@@ -108,8 +110,6 @@ namespace Shop
 
     class Player : Persone
     {
-        private List<Product> _soldGoods = new List<Product>();
-
         public bool CanPay(int price)
         {
             if (Money >= price)
@@ -127,40 +127,31 @@ namespace Shop
         public void Buy(Product product)
         {
             Money -= product.Price;
-            _soldGoods.Add(product);
-        }
-
-        public void ShowPurchase()
-        {
-            if (_soldGoods.Count == 0)
-            {
-                ConsoleColorText("Покупок нет", ConsoleColor.Red);
-            }
-            else
-            {
-                ConsoleColorText("Мои покупки", ConsoleColor.Yellow);
-                base.ShowProducts(_soldGoods, ConsoleColor.Green);
-                ConsoleColorText($"Баланс = {Money}", ConsoleColor.Blue);
-            }
+            Products.Add(product);
         }
     }
 
     class Seller : Persone
     {
-        public void AddProducts(List<Product> products)
+        public void AddProducts()
         {
-            products.Add(new Product("фото", 900));
-            products.Add(new Product("ноут", 200));
-            products.Add(new Product("тел", 50));
+            Products.Add(new Product("фото", 900));
+            Products.Add(new Product("ноут", 200));
+            Products.Add(new Product("тел", 50));
         }
 
-        public bool TryGetProduct(out Product product, List<Product> products)
+        public Seller()
+        {
+            AddProducts();
+        }
+
+        public bool TryGetProduct(out Product product)
         {
             Console.WriteLine("Выберите товар который хотите купить");
 
             int.TryParse(Console.ReadLine(), out int index);
 
-            if (index <= 0 || index > products.Count)
+            if (index <= 0 || index > Products.Count)
             {
                 ConsoleColorText("Товар не найден", ConsoleColor.Red);
                 product = null;
@@ -168,7 +159,7 @@ namespace Shop
             }
             else
             {
-                product = products[index - 1];
+                product = Products[index - 1];
                 product.ShowInfo();
                 return true;
             }
@@ -176,8 +167,8 @@ namespace Shop
 
         public void Sell(Product product)
         {
-            Cash += product.Price;
-            ConsoleColorText($"Баланс продавца = {Cash}", ConsoleColor.Green);
+            Money += product.Price;
+            ConsoleColorText($"Баланс продавца = {Money}", ConsoleColor.Green);
         }
     }
 
